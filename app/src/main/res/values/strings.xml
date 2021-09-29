@@ -10,4 +10,5 @@
       the License.
       -->
     <string name="app_name">AndroidDevChallenge</string>
+    <string name="mapbox_access_token">MAXBOX_ACCESS_TOKEN</string>
 </resources>
