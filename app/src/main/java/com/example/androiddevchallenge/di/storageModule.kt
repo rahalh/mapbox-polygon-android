@@ -27,7 +27,7 @@ class StorageModule {
         return Room.databaseBuilder(
             application,
             AppDatabase::class.java,
-            "android-challenge"
+            "DB"
         ).addTypeConverter(parcelTypeConverters).build()
     }
 

@@ -1,20 +1,17 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -74,50 +71,54 @@ fun MapboxMap(viewModel: ParcelViewModel) {
     val mapView = rememberMapViewWithLifecycle()
 
     val parcels by viewModel.getParcels().collectAsState(initial = listOf())
-
     var selectedParcel by remember { mutableStateOf<Parcel?>(null) }
     var mode by remember { mutableStateOf(Mode.Viewing) }
     var showDialog by remember { mutableStateOf(false) }
-    val title = remember { mutableStateOf(TextFieldValue()) }
-    val points by remember { mutableStateOf(mutableListOf<LatLng>()) }
+    var title by remember { mutableStateOf(TextFieldValue()) }
+    val vertices by remember { mutableStateOf(mutableListOf<LatLng>()) }
 
     Box(Modifier.fillMaxSize()) {
-        MapboxMapContainer(mapView, mode, selectedParcel, onMapClick = { point -> points.add(point) })
+        MapboxMapContainer(mapView, mode, selectedParcel, onMapClick = { point -> vertices.add(point) })
         if (showDialog) {
             AlertDialog(
                 title = { Text(text = "Veuillez entrer un titre") },
                 text = {
                     TextField(
-                        value = title.value,
-                        onValueChange = { title.value = it }
+                        value = title,
+                        onValueChange = { title = it }
                     )
                 },
                 onDismissRequest = { showDialog = false },
                 confirmButton = {
                     TextButton(onClick = {
                         showDialog = false
-                        viewModel.createParcel(Parcel(title.value.text, points.map { com.example.androiddevchallenge.data.LatLng(it.latitude, it.longitude) }))
+                        viewModel.createParcel(Parcel(title.text, vertices.map { com.example.androiddevchallenge.data.LatLng(it.latitude, it.longitude) }))
                         mode = Mode.Viewing
+                        title = TextFieldValue()
                     }) { Text("Confirmer") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDialog = false }) { Text("Annuler") }
+                    TextButton(onClick = {
+                        showDialog = false
+                        title = TextFieldValue()
+                    }) { Text("Annuler") }
                 },
             )
         }
         if (mode == Mode.Viewing) {
-            Row {
-                parcels.forEach { parcel ->
-                    TextButton(onClick = { selectedParcel = parcel }) {
-                        Text(parcel.title)
-                    }
-                }
+            if (parcels.isNotEmpty()) {
+                if (selectedParcel == null) selectedParcel = parcels[0]
+                Spinner(parcels, selectedParcel, onClick = { selectedParcel = it })
             }
 
             CreateParcelButton(
                 Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(horizontal = 8.dp, vertical = 24.dp), onClick = { mode = Mode.Drawing; points.clear() })
+                    .padding(horizontal = 8.dp, vertical = 24.dp),
+                onClick = {
+                    mode = Mode.Drawing;
+                    vertices.clear()
+                })
         }
         else {
             Row(
@@ -127,15 +128,12 @@ fun MapboxMap(viewModel: ParcelViewModel) {
                     .align(Alignment.BottomStart)
                     .padding(8.dp, 24.dp)
             ) {
-                IconButton(
-                    onClick = { mode = Mode.Viewing; points.clear() }) {
-                    Icon(imageVector = Icons.Filled.Close, contentDescription = null)
+                IconButton(modifier = Modifier.background(MaterialTheme.colors.primary, MaterialTheme.shapes.medium).padding(1.dp), onClick = { mode =
+                    Mode.Viewing; vertices.clear() }) {
+                    Icon(imageVector = Icons.Filled.Close, contentDescription = Icons.Filled.Close.name, tint = MaterialTheme.colors.onPrimary)
                 }
-                IconButton(
-                    onClick = {
-                        showDialog = true;
-                    }) {
-                    Icon(imageVector = Icons.Filled.Check, contentDescription = null)
+                IconButton(modifier = Modifier.background(MaterialTheme.colors.primary, MaterialTheme.shapes.medium).padding(1.dp), onClick = { showDialog = true }) {
+                    Icon(imageVector = Icons.Filled.Check, contentDescription = Icons.Filled.Check.name, tint = MaterialTheme.colors.onPrimary)
                 }
             }
         }
@@ -263,11 +261,11 @@ fun MapboxMap.centerTo(lat: Double, lng: Double, zoom: Double) {
 @Composable
 private fun CreateParcelButton(modifier: Modifier, onClick: () -> Unit) {
     Button(
-        modifier = modifier,
+        modifier = modifier.background(MaterialTheme.colors.primary, MaterialTheme.shapes.medium),
         onClick = onClick
     ) {
         Row {
-            Icon(Icons.Filled.Add, "Add a parcel")
+            Icon(Icons.Filled.Add, Icons.Filled.Add.name, tint = MaterialTheme.colors.onPrimary)
             Spacer(modifier = Modifier.padding(end = 4.dp))
             Text(text = "Add a parcel")
         }
@@ -305,7 +303,7 @@ private fun initCircleLayer(style: Style) {
     )
     circleLayer.setProperties(
         circleRadius(7f),
-        circleColor(android.graphics.Color.parseColor("#d004d3"))
+        circleColor(android.graphics.Color.WHITE)
     )
     style.addLayer(circleLayer)
 }
@@ -331,6 +329,7 @@ private fun initFillLayer(style: Style) {
     fillLayer.setProperties(
         fillOpacity(.6f),
         fillColor(android.graphics.Color.WHITE)
+
     )
     style.addLayer(fillLayer)
 }
@@ -349,7 +348,7 @@ private fun initLineLayer(style: Style) {
     )
     lineLayer.setProperties(
         lineColor(android.graphics.Color.WHITE),
-        lineWidth(5f)
+        lineWidth(2f),
     )
     style.addLayerBelow(lineLayer, CIRCLE_LAYER_ID)
 }
@@ -357,3 +356,46 @@ private fun initLineLayer(style: Style) {
 private fun LatLng.toPoint(): Point {
     return Point.fromLngLat(longitude, latitude)
 }
+
+@Composable
+fun Spinner(items: List<Parcel>, selectedParcel: Parcel?, onClick: (Parcel) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier
+        .padding(8.dp)
+        .fillMaxWidth()
+        .background(MaterialTheme.colors.surface)) {
+
+        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                if (selectedParcel != null) {
+                    Text(text = selectedParcel.title, color = MaterialTheme.colors.onSurface)
+                } else { Text("") }
+                if (expanded) {
+                    Icon(
+                        imageVector = Icons.Filled.ExpandLess,
+                        contentDescription = "ExpandLess",
+                        tint = MaterialTheme.colors.onSurface
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.ExpandMore,
+                        contentDescription = "ExpandMore",
+                        tint = MaterialTheme.colors.onSurface
+                    )
+                }
+            }
+        }
+        if(expanded) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                items.forEach {
+                    TextButton(onClick = { expanded = false; onClick(it) }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) { Text(text = it.title, color = MaterialTheme.colors.onSurface) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
