@@ -28,7 +28,8 @@ allprojects {
             }
             credentials {
                 username = 'mapbox'
-                password = project.property("MAPBOX_DOWNLOADS_TOKEN")
+//                password = project.property("MAPBOX_DOWNLOADS_TOKEN")
+                password = 'MAXBOX_ACCESS_TOKEN'
             }
         }
     }

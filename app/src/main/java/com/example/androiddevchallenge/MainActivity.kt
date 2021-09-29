@@ -80,7 +80,7 @@ fun MapboxMap(viewModel: ParcelViewModel) {
 
     if (showDialog) {
         AlertDialog(
-            title = { Text(text = "Veuillez entrer un titre") },
+            title = { Text(text = "Veuillez entrer un nom") },
             text = {
                 TextField(
                     value = title,
@@ -152,47 +152,7 @@ fun MapboxMapContainer(map: MapView, mode: Mode, selectedParcel: Parcel?, onMapC
     var lineSource by remember { mutableStateOf<GeoJsonSource?>(null) }
     var fillSource by remember { mutableStateOf<GeoJsonSource?>(null) }
     val points by remember { mutableStateOf(mutableListOf<Point>()) }
-//    val listener by remember { mutableStateOf({ target: LatLng ->
-//        val point = target.toPoint()
-//
-//        onMapClick(target)
-//
-//        if (points.size < 2) {
-//            points.add(point);
-//        } else if (points.size == 2) {
-//            points.add(point);
-//            points.add(points[0]);
-//        } else {
-//            points.removeAt(points.size - 1);
-//            points.add(point);
-//            points.add(points[0]);
-//        }
-//
-//        circleSource?.setGeoJson(FeatureCollection.fromFeatures(
-//            points.map { p -> Feature.fromGeometry(p) }
-//        ))
-//
-//        lineSource?.setGeoJson(
-//            FeatureCollection.fromFeatures(
-//                listOf(Feature.fromGeometry(LineString.fromLngLats(points)))
-//            )
-//        )
-//
-//        fillSource?.setGeoJson(
-//            FeatureCollection.fromFeatures(
-//                listOf(
-//                    Feature.fromGeometry(
-//                        Polygon.fromLngLats(
-//                            listOf(
-//                                points
-//                            )
-//                        )
-//                    )
-//                )
-//            )
-//        )
-//        true
-//    }) }
+
     val listener by remember { mutableStateOf(object : MapboxMap.OnMapClickListener{
         override fun onMapClick(target: LatLng): Boolean { val point = target.toPoint()
 
