@@ -27,7 +27,7 @@ class StorageModule {
         return Room.databaseBuilder(
             application,
             AppDatabase::class.java,
-            "DB"
+            "Parcels"
         ).addTypeConverter(parcelTypeConverters).build()
     }
 

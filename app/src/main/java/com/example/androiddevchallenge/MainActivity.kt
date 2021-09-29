@@ -1,6 +1,7 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -77,34 +78,34 @@ fun MapboxMap(viewModel: ParcelViewModel) {
     var title by remember { mutableStateOf(TextFieldValue()) }
     val vertices by remember { mutableStateOf(mutableListOf<LatLng>()) }
 
+    if (showDialog) {
+        AlertDialog(
+            title = { Text(text = "Veuillez entrer un titre") },
+            text = {
+                TextField(
+                    value = title,
+                    onValueChange = { title = it }
+                )
+            },
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    viewModel.createParcel(Parcel(title.text, vertices.map { com.example.androiddevchallenge.data.LatLng(it.latitude, it.longitude) }))
+                    mode = Mode.Viewing
+                    title = TextFieldValue()
+                }) { Text("Confirmer") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    title = TextFieldValue()
+                }) { Text("Annuler") }
+            },
+        )
+    }
     Box(Modifier.fillMaxSize()) {
         MapboxMapContainer(mapView, mode, selectedParcel, onMapClick = { point -> vertices.add(point) })
-        if (showDialog) {
-            AlertDialog(
-                title = { Text(text = "Veuillez entrer un titre") },
-                text = {
-                    TextField(
-                        value = title,
-                        onValueChange = { title = it }
-                    )
-                },
-                onDismissRequest = { showDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDialog = false
-                        viewModel.createParcel(Parcel(title.text, vertices.map { com.example.androiddevchallenge.data.LatLng(it.latitude, it.longitude) }))
-                        mode = Mode.Viewing
-                        title = TextFieldValue()
-                    }) { Text("Confirmer") }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showDialog = false
-                        title = TextFieldValue()
-                    }) { Text("Annuler") }
-                },
-            )
-        }
         if (mode == Mode.Viewing) {
             if (parcels.isNotEmpty()) {
                 if (selectedParcel == null) selectedParcel = parcels[0]
@@ -151,47 +152,87 @@ fun MapboxMapContainer(map: MapView, mode: Mode, selectedParcel: Parcel?, onMapC
     var lineSource by remember { mutableStateOf<GeoJsonSource?>(null) }
     var fillSource by remember { mutableStateOf<GeoJsonSource?>(null) }
     val points by remember { mutableStateOf(mutableListOf<Point>()) }
-    val listener by remember { mutableStateOf({ target: LatLng ->
-        val point = target.toPoint()
+//    val listener by remember { mutableStateOf({ target: LatLng ->
+//        val point = target.toPoint()
+//
+//        onMapClick(target)
+//
+//        if (points.size < 2) {
+//            points.add(point);
+//        } else if (points.size == 2) {
+//            points.add(point);
+//            points.add(points[0]);
+//        } else {
+//            points.removeAt(points.size - 1);
+//            points.add(point);
+//            points.add(points[0]);
+//        }
+//
+//        circleSource?.setGeoJson(FeatureCollection.fromFeatures(
+//            points.map { p -> Feature.fromGeometry(p) }
+//        ))
+//
+//        lineSource?.setGeoJson(
+//            FeatureCollection.fromFeatures(
+//                listOf(Feature.fromGeometry(LineString.fromLngLats(points)))
+//            )
+//        )
+//
+//        fillSource?.setGeoJson(
+//            FeatureCollection.fromFeatures(
+//                listOf(
+//                    Feature.fromGeometry(
+//                        Polygon.fromLngLats(
+//                            listOf(
+//                                points
+//                            )
+//                        )
+//                    )
+//                )
+//            )
+//        )
+//        true
+//    }) }
+    val listener by remember { mutableStateOf(object : MapboxMap.OnMapClickListener{
+        override fun onMapClick(target: LatLng): Boolean { val point = target.toPoint()
 
-        onMapClick(target)
+            onMapClick(target)
 
-        if (points.size < 2) {
-            points.add(point);
-        } else if (points.size == 2) {
-            points.add(point);
-            points.add(points[0]);
-        } else {
-            points.removeAt(points.size - 1);
-            points.add(point);
-            points.add(points[0]);
-        }
+            if (points.size < 2) {
+                points.add(point);
+            } else if (points.size == 2) {
+                points.add(point);
+                points.add(points[0]);
+            } else {
+                points.removeAt(points.size - 1);
+                points.add(point);
+                points.add(points[0]);
+            }
 
-        circleSource?.setGeoJson(FeatureCollection.fromFeatures(
-            points.map { p -> Feature.fromGeometry(p) }
-        ))
+            circleSource?.setGeoJson(FeatureCollection.fromFeatures(
+                points.map { p -> Feature.fromGeometry(p) }
+            ))
 
-        lineSource?.setGeoJson(
-            FeatureCollection.fromFeatures(
-                listOf(Feature.fromGeometry(LineString.fromLngLats(points)))
+            lineSource?.setGeoJson(
+                FeatureCollection.fromFeatures(
+                    listOf(Feature.fromGeometry(LineString.fromLngLats(points)))
+                )
             )
-        )
 
-        fillSource?.setGeoJson(
-            FeatureCollection.fromFeatures(
-                listOf(
-                    Feature.fromGeometry(
-                        Polygon.fromLngLats(
-                            listOf(
-                                points
+            fillSource?.setGeoJson(
+                FeatureCollection.fromFeatures(
+                    listOf(
+                        Feature.fromGeometry(
+                            Polygon.fromLngLats(
+                                listOf(
+                                    points
+                                )
                             )
                         )
                     )
                 )
             )
-        )
-        true
-    }) }
+            return true }})}
 
     AndroidView(
         factory = { map },
@@ -232,8 +273,6 @@ fun MapboxMapContainer(map: MapView, mode: Mode, selectedParcel: Parcel?, onMapC
                     }
 
                     if (mode == Mode.Drawing) {
-                        clearSources(fillSource!!, circleSource!!, lineSource!!)
-
                         mapbox!!.addOnMapClickListener(listener)
                     }
                 }
@@ -243,7 +282,6 @@ fun MapboxMapContainer(map: MapView, mode: Mode, selectedParcel: Parcel?, onMapC
 }
 
 fun MapboxMap.moveCamera(polygon: List<LatLng>): LatLng {
-    // TODO: LatLngBoundsZoom is also an option
     val bounds = LatLngBounds.Builder().includes(polygon).build()
     animateCamera { getCameraForLatLngBounds(bounds) }
     return bounds.center
@@ -266,8 +304,8 @@ private fun CreateParcelButton(modifier: Modifier, onClick: () -> Unit) {
     ) {
         Row {
             Icon(Icons.Filled.Add, Icons.Filled.Add.name, tint = MaterialTheme.colors.onPrimary)
-            Spacer(modifier = Modifier.padding(end = 4.dp))
-            Text(text = "Add a parcel")
+            Spacer(modifier = Modifier.padding(end = 8.dp))
+            Text(text = "Create a parcel")
         }
     }
 }
