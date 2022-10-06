@@ -3,14 +3,14 @@ This android application demonstrates the use of Mapbox Maps SDK to draw a polyg
 
 ## Screenshots
 
-[<img src="/screenshots/Screenshot_20210929-102008_AndroidDevChallenge.jpg" align="left"
-width="250" hspace="10" vspace="10">](/screenshots/Screenshot_20210929-102008_AndroidDevChallenge.jpg)
-[<img src="/screenshots/Screenshot_20210929-102032_AndroidDevChallenge.jpg" align="center"
-width="250" hspace="10" vspace="10">](/screenshots/Screenshot_20210929-102032_AndroidDevChallenge.jpg)
-[<img src="/screenshots/Screenshot_20210929-102023_AndroidDevChallenge.jpg" align="center"
-width="250" hspace="10" vspace="10">](/screenshots/Screenshot_20210929-102023_AndroidDevChallenge.jpg)
-[<img src="/screenshots/Screenshot_20210929-102047_AndroidDevChallenge.jpg" align="center"
-width="250" hspace="10" vspace="10">](/screenshots/Screenshot_20210929-102047_AndroidDevChallenge.jpg)
+[<img src="/screenshots/screenshot0.jpg" align="left"
+width="250" hspace="10" vspace="10">](/screenshots/screenshot0.jpg)
+[<img src="/screenshots/screenshot1.jpg" align="center"
+width="250" hspace="10" vspace="10">](/screenshots/screenshot1.jpg)
+[<img src="/screenshots/screenshot2.jpg" align="center"
+width="250" hspace="10" vspace="10">](/screenshots/screenshot2.jpg)
+[<img src="/screenshots/screenshot3.jpg" align="center"
+width="250" hspace="10" vspace="10">](/screenshots/screenshot3.jpg)
 
 ## Setup
 Clone this repository and import into **Android Studio**
