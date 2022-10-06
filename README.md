@@ -13,7 +13,8 @@ width="250" hspace="10" vspace="10">](/screenshots/screenshot2.jpg)
 width="250" hspace="10" vspace="10">](/screenshots/screenshot3.jpg)
 
 ## Setup
-Clone this repository and import into **Android Studio**
+- Clone this repository and import into **Android Studio**
 ```bash
 git clone https://github.com/rahalh/mapbox-android-kt
 ```
+- Replace 'MAXBOX_ACCESS_TOKEN' in build.gradle with your own Mapbox Maps access key
